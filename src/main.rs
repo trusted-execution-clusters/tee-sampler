@@ -4,7 +4,8 @@ use az_snp_vtpm::vtpm;
 use kbs_types::Tee;
 use az_snp_vtpm::hcl;
 use serde_json::Value;
-
+use verifier::snp::{SnpEvidence, parse_tee_evidence};
+use log::warn;
 #[cfg(feature = "az-tdx-vtpm")]
 use verifier::intel_dcap::{ecdsa_quote_verification, extend_using_custom_claims};
 #[cfg(feature = "az-tdx-vtpm")]
@@ -31,7 +32,7 @@ struct EvidenceAzTdxVtpm {
 }
 
 async fn print_claim(evidence_value: Value, tee_type: Tee) {
-    let mut claim = Value::Null;
+    let mut claim = evidence_value.clone();
     match tee_type {
         Tee::AzSnpVtpm => {
             let evidence: EvidenceAzSnpVtpm = serde_json::from_value(evidence_value).unwrap();
@@ -51,9 +52,13 @@ async fn print_claim(evidence_value: Value, tee_type: Tee) {
             let _ = extend_claim(&mut claim, &evidence.tpm_quote);
             let _ = extend_using_custom_claims(&mut claim, custom_claims);
         }
-        _ => println!("{:?}:{evidence_value}", tee_type)
+        Tee::Snp => {
+            let evidence = serde_json::from_value::<SnpEvidence>(evidence_value).unwrap();
+            claim = parse_tee_evidence(&evidence.attestation_report);
+        }
+        _ => warn!("Unsupported tee type: {:?}", tee_type)
     }
-    println!("{:?}:\n{}", detect_tee_type(), serde_json::to_string_pretty(&claim).expect("Failed to serialize claim"));
+    println!("{:?}:\n{}", tee_type, serde_json::to_string_pretty(&claim).expect("Failed to serialize claim"));
 }
 
 #[tokio::main]

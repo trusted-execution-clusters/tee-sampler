@@ -1,10 +1,10 @@
 [package]
-name = "hardware-qoute"
+name = "hardware-sampler"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-attester = { git = "https://github.com/confidential-containers/guest-components", package = "attester", default-features = false, features = ["snp-attester", "az-snp-vtpm-attester", "tpm-attester"] }
+attester = { git = "https://github.com/iroykaufman/guest-components", branch = "TPM-as-additional-device", package = "attester", default-features = false, features = ["snp-attester", "az-snp-vtpm-attester", "tpm-attester"] }
 env_logger = "0.11"
 anyhow = "1"
 tokio = { version = "1", features = ["full"] }
@@ -17,6 +17,8 @@ hex = "0.4.3"
 kbs-types = "0.14"
 verifier = { git = "https://github.com/iroykaufman/trustee", branch = "feat/expose_modules", package = "verifier", default-features = false, features = ["az-snp-vtpm-verifier"] }
 az-tdx-vtpm = { version = "0.7.4", optional = true }
+sev = "7.1.0"
+log = "0.4.29"
 
 [features]
 default = ["az-tdx-vtpm"]
