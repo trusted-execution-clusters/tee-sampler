@@ -1,0 +1,55 @@
+# SPDX-FileCopyrightText: 2025 Roy Kaufman <rkaufman@redhat.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: "Build and push hardware-sampler container image"
+
+env:
+  NAME: "hardware-sampler"
+  REGISTRY: "ghcr.io/${{ github.repository_owner }}"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-hardware-sampler-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build hardware-sampler image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ env.NAME }}
+          tags: latest
+          containerfiles: |
+            Containerfile
+          context: .
+          oci: true
+
+      - name: Push to Container Registry
+        uses: redhat-actions/push-to-registry@v2
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && github.repository_owner == 'iroykaufman'
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          image: ${{ env.NAME }}
+          tags: latest
+
