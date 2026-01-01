@@ -8,7 +8,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-attester = { git = "https://github.com/iroykaufman/guest-components", branch = "TPM-as-additional-device", package = "attester", default-features = false, features = ["snp-attester", "az-snp-vtpm-attester", "tpm-attester"] }
+attester = { git = "https://github.com/confidential-containers/guest-components", package = "attester", default-features = false, features = ["snp-attester", "az-snp-vtpm-attester", "tpm-attester"] }
 env_logger = "0.11"
 anyhow = "1"
 tokio = { version = "1", features = ["full"] }
